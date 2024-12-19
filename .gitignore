@@ -23,3 +23,28 @@ go.work.sum
 
 # env file
 .env
+
+# vue frontend
+vue/node_modules
+vue/logs
+vue/*.log
+vue/npm-debug.log*
+vue/yarn-debug.log*
+vue/yarn-error.log*
+vue/pnpm-debug.log*
+vue/lerna-debug.log*
+
+vue/dist
+vue/dist-ssr
+vue/*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
