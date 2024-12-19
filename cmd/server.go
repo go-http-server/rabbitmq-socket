@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 
+	"github.com/go-http-server/rabbitmq-socket/internal/rabbitmq"
 	"github.com/go-http-server/rabbitmq-socket/utils"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -16,5 +17,11 @@ func main() {
 	if envVars.MODE_ENV == utils.DEVELOPMENT_MODE {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
-	log.Info().Str("HTTP_SERVER_ADDRESS", envVars.HTTP_SERVER_ADDRESS).Msg("loaded environment variables")
+	log.Info().Msg("loaded environment variables")
+
+	_, err = rabbitmq.NewRabbitMQClient(envVars.RABBITMQ_URL)
+	if err != nil {
+		log.Fatal().Err(err).Msg("cannot connect to rabbitmq")
+	}
+	log.Info().Msg("connected to rabbitmq")
 }
