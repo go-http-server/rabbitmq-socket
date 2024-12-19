@@ -3,6 +3,7 @@ module github.com/go-http-server/rabbitmq-socket
 go 1.23.0
 
 require (
+	github.com/rabbitmq/amqp091-go v1.10.0
 	github.com/rs/zerolog v1.33.0
 	github.com/spf13/viper v1.19.0
 )
