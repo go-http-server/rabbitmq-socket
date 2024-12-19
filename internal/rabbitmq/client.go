@@ -27,9 +27,23 @@ func NewRabbitMQClient(rabbitmqURL string) (*RabbitMQClient, error) {
 	}, nil
 }
 
+func (rc *RabbitMQClient) CreateQueue(queueName string, durable, autoDelete bool, argsTable amqp.Table) (amqp.Queue, error) {
+	q, err := rc.channel.QueueDeclare(
+		queueName,
+		durable,    // if true then queue will be hold after rabbitmq restart.
+		autoDelete, // if fasle then queue will be hold although queue not have CONSUMER listen that.
+		false,      // exclusive is true then allow only current connection connect to queue.
+		false,      // noWait true when system no needed response immediate
+		argsTable,
+	)
+	if err != nil {
+		return amqp.Queue{}, err
+	}
+
+	return q, nil
+}
+
 func (rc *RabbitMQClient) CloseChannel() {
 	log.Info().Msg("Closing channel...")
-	log.Info().Msg("Closing connection...")
 	defer rc.channel.Close()
-	defer rc.conn.Close()
 }
