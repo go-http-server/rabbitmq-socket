@@ -19,9 +19,10 @@ func main() {
 	}
 	log.Info().Msg("loaded environment variables")
 
-	_, err = rabbitmq.NewRabbitMQClient(envVars.RABBITMQ_URL)
+	rmqCli, err := rabbitmq.NewRabbitMQClient(envVars.RABBITMQ_URL)
 	if err != nil {
 		log.Fatal().Err(err).Msg("cannot connect to rabbitmq")
 	}
+	defer rmqCli.CloseChannel()
 	log.Info().Msg("connected to rabbitmq")
 }

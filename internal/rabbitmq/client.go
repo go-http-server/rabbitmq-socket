@@ -1,6 +1,8 @@
 package rabbitmq
 
 import (
+	"context"
+
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/rs/zerolog/log"
 )
@@ -27,6 +29,7 @@ func NewRabbitMQClient(rabbitmqURL string) (*RabbitMQClient, error) {
 	}, nil
 }
 
+// WARN: durable is parameter decide queue won't be delete after rabbitmq restart. autoDelete -> delete queue when no CONSUMER listen that.
 func (rc *RabbitMQClient) CreateQueue(queueName string, durable, autoDelete bool, argsTable amqp.Table) (amqp.Queue, error) {
 	q, err := rc.channel.QueueDeclare(
 		queueName,
@@ -43,7 +46,30 @@ func (rc *RabbitMQClient) CreateQueue(queueName string, durable, autoDelete bool
 	return q, nil
 }
 
+// CreateBinding will bind the current channel to the given exchange using the using routing key provided
+func (rc *RabbitMQClient) QueueBind(queueName, bindingName, exchangeName string) error {
+	// leaving noWait false, having noWait set to false will make the channel return an error if its fails to binding
+	return rc.channel.QueueBind(queueName, bindingName, exchangeName, false, nil)
+}
+
+func (rc *RabbitMQClient) PublishEvent(ctx context.Context, exchangeName, routingKey string, options amqp.Publishing) error {
+	confirm, err := rc.channel.PublishWithDeferredConfirmWithContext(ctx, exchangeName, routingKey, true, false, options)
+	if err != nil {
+		return err
+	}
+	isConfirmed, err := confirm.WaitContext(ctx)
+	if err != nil {
+		return err
+	}
+	log.Printf("publish event with deferred confirm with context: %t", isConfirmed)
+	return nil
+}
+
 func (rc *RabbitMQClient) CloseChannel() {
-	log.Info().Msg("Closing channel...")
-	defer rc.channel.Close()
+	log.Info().Msg("closing channel...")
+	err := rc.channel.Close()
+	if err != nil {
+		log.Error().Err(err).Msg("cannot close channel")
+	}
+	log.Info().Msg("closed channel")
 }
